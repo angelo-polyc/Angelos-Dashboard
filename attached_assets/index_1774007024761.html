@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Recession Risk Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0a0a0f;--card:#12121a;--card2:#1a1a26;--bg2:#0f0f18;--bdr:#1e1e2e;--bdr2:#2a2a3e;--t1:#e8e8ed;--t2:#8888a0;--t3:#55556a;--red:#ff4d4f;--rdim:#ff4d4f33;--grn:#52c41a;--gdim:#52c41a33;--amb:#faad14;--adim:#faad1433;--blu:#4096ff;--bdim:#4096ff22;--cyn:#36cfc9;--pur:#9254de;--mag:#eb2f96;--mono:"JetBrains Mono",monospace;--sans:"DM Sans",sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t1);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(10,10,15,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
+.hdr-l{display:flex;align-items:center;gap:14px}
+.hdr h1{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.hdr h1 span{color:var(--red)}
+.pill{font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
+.pill.loading{background:var(--bdim);color:var(--blu);border:1px solid var(--blu);animation:pulse 1.5s infinite}
+.pill.live{background:var(--gdim);color:var(--grn);border:1px solid var(--grn)}
+.pill.err{background:var(--rdim);color:var(--red);border:1px solid var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.rbtn{font-family:var(--mono);font-size:10px;padding:5px 14px;border:1px solid var(--bdr2);background:var(--card);color:var(--t2);border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .2s}
+.rbtn:hover{border-color:var(--blu);color:var(--blu)}
+.rbtn:disabled{opacity:.4;cursor:not-allowed}
+.lu{font-family:var(--mono);font-size:9px;color:var(--t3)}
+.dash{max-width:1440px;margin:0 auto;padding:16px 20px}
+.rrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.ga{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:18px;text-align:center}
+.ga .gl{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:6px}
+.ga .gv{font-family:var(--mono);font-size:34px;font-weight:700;line-height:1.1}
+.ga .gs{font-size:11px;color:var(--t2);margin-top:3px}
+.ga .bar{width:100%;height:3px;background:var(--bdr);border-radius:2px;margin-top:10px;overflow:hidden}
+.ga .bf{height:100%;border-radius:2px;transition:width .8s ease}
+.st{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);margin:20px 0 10px;padding-left:2px}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;margin-bottom:6px}
+.sc{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:12px 14px;transition:all .15s;cursor:pointer;user-select:none}
+.sc:hover{background:var(--card2);border-color:var(--bdr2)}
+.sc.nc{cursor:default}
+.sc .sl{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:var(--t3);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
+.sc .eh{font-size:8px;opacity:0;transition:opacity .15s;color:var(--blu)}
+.sc:hover .eh{opacity:1}
+.sc.act .eh{opacity:1;transform:rotate(180deg)}
+.sc .sv{font-family:var(--mono);font-size:20px;font-weight:600;line-height:1}
+.sc .sx{font-family:var(--mono);font-size:10px;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fq{font-family:var(--mono);font-size:7.5px;color:var(--t3);background:rgba(255,255,255,.04);border:1px solid var(--bdr);padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px}
+.th{border-left:3px solid var(--red)}.tm{border-left:3px solid var(--amb)}.tl{border-left:3px solid var(--grn)}
+.cup{color:var(--grn)}.cdn{color:var(--red)}.cfl{color:var(--t3)}
+.sc.act{border-color:var(--blu);background:var(--card2);box-shadow:0 0 0 1px rgba(64,150,255,.15)}
+.drw{grid-column:1/-1;background:var(--bg2);border:1px solid var(--bdr2);border-radius:10px;padding:16px;animation:sld .25s ease-out;overflow:hidden}
+@keyframes sld{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.drw .dh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.drw .dt{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--t2)}
+.drw .dc{font-family:var(--mono);font-size:10px;color:var(--t3);background:none;border:1px solid var(--bdr);border-radius:4px;padding:2px 8px;cursor:pointer}
+.drw .dc:hover{color:var(--t1);border-color:var(--t3)}
+.drw canvas{width:100%!important;height:180px!important}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
+.cc{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px}
+.cc .ct{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--t2);margin-bottom:10px}
+.cc canvas{width:100%!important;height:180px!important}
+.sec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:6px}
+.sec-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:14px}
+.sec-card .sec-name{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--t3);margin-bottom:6px;display:flex;justify-content:space-between}
+.sec-card .sec-price{font-family:var(--mono);font-size:18px;font-weight:600}
+.sec-card .sec-row{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+.sec-card .sec-metric{font-family:var(--mono);font-size:9px}
+.sec-card .sec-metric .ml{color:var(--t3);font-size:7.5px;text-transform:uppercase;display:block;margin-bottom:1px}
+.load-ov{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .5s}
+.load-ov.hidden{opacity:0;pointer-events:none}
+.spinner{width:40px;height:40px;border:2px solid var(--bdr);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-family:var(--mono);font-size:12px;color:var(--t3);margin-top:16px;text-transform:uppercase;letter-spacing:1px}
+@media(max-width:900px){.rrow,.cg{grid-template-columns:1fr}.sg,.sec-grid{grid-template-columns:1fr}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="load-ov" id="loadOv"><div class="spinner"></div><div class="load-txt">Fetching macro data...</div></div>
+<div class="hdr">
+  <div class="hdr-l"><h1>Recession <span>Risk</span> Monitor</h1><div class="pill loading" id="pill">Loading</div></div>
+  <div class="hdr-r"><span class="lu" id="luTime">—</span><button class="rbtn" id="rbtn" onclick="manualRefresh()">⟳ Refresh</button></div>
+</div>
+<div class="dash">
+  <div class="rrow" id="rg"></div>
+  <div class="st">Labor Market</div><div class="sg" id="labor"></div>
+  <div class="st">Inflation & Rates</div><div class="sg" id="inflation"></div>
+  <div class="st">Leading Indicators</div>
+  <div class="cg"><div class="cc"><div class="ct">Oil — Spot (WTI & Brent) · 5Y</div><canvas id="cOil"></canvas></div><div class="cc"><div class="ct">Oil — Futures Forward Curve</div><canvas id="cFwd"></canvas></div></div>
+  <div class="cg"><div class="cc"><div class="ct">Sahm Rule · 5Y</div><canvas id="cSa"></canvas></div><div class="cc"><div class="ct">Initial Claims (K) · 5Y</div><canvas id="cCl"></canvas></div></div>
+  <div class="cg"><div class="cc"><div class="ct">HY OAS Spread · 5Y</div><canvas id="cHY"></canvas></div><div class="cc"><div class="ct">2s10s Yield Curve · 5Y</div><canvas id="cY"></canvas></div></div>
+  <div class="cg"><div class="cc"><div class="ct">S&P 500 vs 200-DMA · 5Y</div><canvas id="cSP"></canvas></div><div class="cc"><div class="ct">Fed Funds vs Core PCE · 5Y</div><canvas id="cFF"></canvas></div></div>
+  <div class="st">Market & Volatility</div><div class="sg" id="market"></div>
+  <div class="st">Sector Rotation</div><div class="sec-grid" id="sectors"></div>
+</div>
+<script>
+/*
+  ═══════════════════════════════════════════════════
+  This frontend fetches live data from the Express
+  backend which proxies FRED + FMP APIs.
+  
+  The Replit agent should wire the backend endpoints
+  to populate the rendering functions below.
+  
+  For now, the structure and rendering logic is 
+  complete. The agent needs to:
+  1. Connect fetchAll() to /api/fred-bulk and /api/fmp/quotes
+  2. Map FRED observations into the signal cards
+  3. Map FMP quotes into market/sector cards
+  4. Feed chart data from FRED historical observations
+  
+  See REPLIT_AGENT_PROMPT.md for full instructions.
+  ═══════════════════════════════════════════════════
+*/
+
+Chart.defaults.color="#55556a";
+Chart.defaults.borderColor="#1a1a2a";
+Chart.defaults.font.family="'JetBrains Mono',monospace";
+Chart.defaults.font.size=9;
+
+// ═══ Multi-dataset crosshair tooltip ═══
+Chart.register({
+  id:'xhair',
+  afterEvent(ch,args){const e=args.event;ch._xh=e.type==='mouseout'?null:{x:e.x,y:e.y};},
+  afterDraw(ch){
+    const cr=ch._xh;if(!cr)return;
+    const{ctx,chartArea:a}=ch;
+    if(cr.x<a.left||cr.x>a.right||cr.y<a.top||cr.y>a.bottom){ch._xh=null;return;}
+    ctx.save();
+    ctx.setLineDash([3,3]);ctx.lineWidth=.7;ctx.strokeStyle='rgba(255,255,255,0.12)';
+    ctx.beginPath();ctx.moveTo(cr.x,a.top);ctx.lineTo(cr.x,a.bottom);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(a.left,cr.y);ctx.lineTo(a.right,cr.y);ctx.stroke();
+    ctx.setLineDash([]);
+    const xScale=ch.scales.x;
+    const xIdx=Math.round(xScale.getValueForPixel(cr.x));
+    const labels=ch.data.labels||[];
+    const ds=ch.data.datasets;
+    const pad=8,bh=18,gap=2;
+    const visible=ds.filter(d=>!d.hidden&&d.data[xIdx]!=null);
+    const totalH=visible.length*(bh+gap);
+    let startY=cr.y-totalH/2;
+    if(startY<a.top)startY=a.top;
+    if(startY+totalH>a.bottom)startY=a.bottom-totalH;
+    let vi=0;
+    ds.forEach((d)=>{
+      if(d.hidden)return;
+      const val=xIdx>=0&&xIdx<d.data.length?d.data[xIdx]:null;
+      if(val==null)return;
+      const color=d.borderColor||'#fff';
+      const txt=typeof val==='number'?(Math.abs(val)>1000?val.toFixed(0):Math.abs(val)>10?val.toFixed(1):val.toFixed(2)):String(val);
+      ctx.font='600 10px JetBrains Mono,monospace';
+      const tw=ctx.measureText(txt).width;
+      const bw=tw+22;
+      let bx=cr.x+pad;
+      if(bx+bw>a.right)bx=cr.x-pad-bw;
+      const by=startY+vi*(bh+gap);
+      ctx.fillStyle='rgba(10,10,15,0.92)';ctx.strokeStyle=color+'66';ctx.lineWidth=1;
+      ctx.beginPath();ctx.roundRect(bx,by,bw,bh,4);ctx.fill();ctx.stroke();
+      ctx.fillStyle=color;ctx.beginPath();ctx.arc(bx+8,by+bh/2,3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#e8e8ed';ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText(txt,bx+16,by+bh/2);
+      vi++;
+    });
+    if(xIdx>=0&&xIdx<labels.length){
+      const dtxt=labels[xIdx];
+      ctx.font='500 8px JetBrains Mono,monospace';
+      const dtw=ctx.measureText(dtxt).width;
+      const dbw=dtw+12,dbh=16;
+      let dbx=cr.x-dbw/2;
+      if(dbx<a.left)dbx=a.left;if(dbx+dbw>a.right)dbx=a.right-dbw;
+      ctx.fillStyle='rgba(10,10,15,0.92)';ctx.strokeStyle='rgba(64,150,255,0.25)';
+      ctx.beginPath();ctx.roundRect(dbx,a.bottom+3,dbw,dbh,3);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#8888a0';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(dtxt,dbx+dbw/2,a.bottom+3+dbh/2);
+    }
+    ctx.restore();
+  }
+});
+
+// ═══ State ═══
+let fredData={}, fmpQuotes={}, charts={};
+const AUTO_REFRESH=60*60*1000;
+let autoTimer=null;
+
+function fmt(n,d=1){return n==null?"—":n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});}
+function rc(v){return v>=65?"var(--red)":v>=40?"var(--amb)":"var(--grn)";}
+function rl(v){return v>=65?"ELEVATED":v>=40?"CAUTIOUS":"CONTAINED";}
+function sc2(v,l,h){return Math.min(100,Math.max(0,(v-l)/(h-l)*100));}
+
+// Get latest + previous from FRED series
+function gL(id){
+  const s=fredData[id];
+  if(!s||!s.observations||!s.observations.length) return{v:null,p:null,obs:[]};
+  return{v:s.observations[0].value,p:s.observations.length>1?s.observations[1].value:null,obs:s.observations};
+}
+
+// ═══ Fetch ═══
+async function fetchAll(){
+  const pill=document.getElementById("pill");
+  pill.className="pill loading";pill.textContent="Fetching";
+  try{
+    const[fred,quotes]=await Promise.all([
+      fetch("/api/fred-bulk").then(r=>r.json()),
+      fetch("/api/fmp/quotes").then(r=>r.json()),
+    ]);
+    fredData=fred;fmpQuotes=quotes;
+    renderAll();
+    pill.className="pill live";pill.textContent="Live";
+    document.getElementById("luTime").textContent="Updated "+new Date().toLocaleTimeString();
+  }catch(e){
+    console.error(e);
+    pill.className="pill err";pill.textContent="Error";
+  }
+  document.getElementById("loadOv").classList.add("hidden");
+}
+
+async function manualRefresh(){
+  const btn=document.getElementById("rbtn");
+  btn.disabled=true;btn.textContent="⟳ Refreshing...";
+  try{await fetch("/api/flush-cache",{method:"POST"});await fetchAll();}
+  finally{btn.disabled=false;btn.textContent="⟳ Refresh";}
+}
+
+// ═══ Render ═══
+function renderAll(){
+  renderGauges();renderLabor();renderInflation();
+  renderMarket();renderSectors();renderCharts();
+}
+
+// Drawer
+let OD=null;
+function closeDrawer(){if(!OD)return;if(OD.ci)OD.ci.destroy();const el=document.getElementById("da");if(el)el.remove();document.querySelectorAll(".sc.act").forEach(e=>e.classList.remove("act"));OD=null;}
+window.closeDrawer=closeDrawer;
+function toggleDrawer(id,el){
+  if(OD&&OD.k===id){closeDrawer();return;}closeDrawer();
+  const s=fredData[id];if(!s||!s.observations||s.observations.length<3)return;
+  el.classList.add("act");
+  const dr=document.createElement("div");dr.className="drw";dr.id="da";
+  dr.innerHTML=`<div class="dh"><div class="dt">${s.meta?.name||id} — ${s.observations.length} pts</div><button class="dc" onclick="closeDrawer()">✕</button></div><canvas id="dC"></canvas>`;
+  el.insertAdjacentElement("afterend",dr);
+  const obs=s.observations.slice().reverse();
+  const ctx=document.getElementById("dC").getContext("2d");
+  const ci=new Chart(ctx,{type:"line",data:{labels:obs.map(o=>o.date),datasets:[{label:s.meta?.name||id,data:obs.map(o=>o.value),borderColor:"#4096ff",backgroundColor:"#4096ff18",borderWidth:1.5,pointRadius:0,tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:8}}},y:{grid:{color:"#1a1a2a"},ticks:{font:{size:8}}}}}});
+  OD={k:id,ci};dr.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+window.toggleDrawer=toggleDrawer;
+
+function buildCard(id,label,val,chgText,chgCls,freq,threat,clickable=true){
+  const ht=clickable?`<span class="eh">▼</span>`:"";
+  const ck=clickable?` onclick="toggleDrawer('${id}',this)"`:"";
+  const nc=clickable?"":" nc";
+  const fb=freq?`<span class="fq">${freq}</span>`:"";
+  const cr=chgText!=null?`<div class="sx ${chgCls||"cfl"}">${chgText}${fb}</div>`:(fb?`<div class="sx cfl">${fb}</div>`:"");
+  return `<div class="sc${nc} ${threat||""}"${ck}><div class="sl"><span>${label}</span>${ht}</div><div class="sv">${val}</div>${cr}</div>`;
+}
+
+function fredCard(id,label,freq,unit,dec,inv,threshFn){
+  const{v,p}=gL(id);
+  let val=v!=null?(unit==="$"?"$"+fmt(v,dec):fmt(v,dec)+unit):"—";
+  let chgT=null,chgC="cfl";
+  if(v!=null&&p!=null){const d=v-p;const s=d>0?"+":"";chgT=s+d.toFixed(dec);chgC=inv?(d>0?"cdn":d<0?"cup":"cfl"):(d>0?"cup":d<0?"cdn":"cfl");}
+  const thr=v!=null&&threshFn?threshFn(v):"";
+  return buildCard(id,label,val,chgT,chgC,freq,thr);
+}
+
+function renderGauges(){
+  const sahm=gL("SAHMREALTIME").v||0,ue=gL("UNRATE").v||0,hy=gL("BAMLH0A0HYM2").v||0;
+  const brent=gL("DCOILBRENTEU").v||0,pce=gL("PCEPILFE").v||0,sent=gL("UMCSENT").v||100;
+  const spread=gL("T10Y2Y").v||0;
+  const sc={sahm:sc2(sahm,0,.5),ue:sc2(ue,3.5,5),hy:sc2(hy,300,700),oil:sc2(brent,70,130),inf:sc2(pce,2,4),sent:sc2(80-sent,0,40),crv:spread<0?80:Math.max(0,40-spread*40)};
+  const W={sahm:.2,ue:.15,hy:.15,oil:.2,inf:.15,sent:.1,crv:.05};
+  let comp=0;Object.keys(sc).forEach(k=>comp+=sc[k]*W[k]);comp=Math.round(comp);
+  const rS=Math.round(sc.sahm*.25+sc.ue*.25+sc.oil*.25+sc.hy*.25);
+  const dS=Math.round(sc.oil*.3+sc.hy*.2+sc.inf*.2+sc.sent*.15+sc.ue*.15);
+  document.getElementById("rg").innerHTML=[{l:"Composite Risk Score",v:comp},{l:"Recession Probability (12mo)",v:rS},{l:"Drawdown Risk (≥15%)",v:dS}].map(g=>`<div class="ga"><div class="gl">${g.l}</div><div class="gv" style="color:${rc(g.v)}">${g.v}</div><div class="gs">${rl(g.v)}</div><div class="bar"><div class="bf" style="width:${g.v}%;background:${rc(g.v)}"></div></div></div>`).join("");
+}
+
+function renderLabor(){
+  document.getElementById("labor").innerHTML=[
+    fredCard("UNRATE","Unemployment","MoM","%",1,true,v=>v>=4.5?"th":v>=4.2?"tm":"tl"),
+    fredCard("U6RATE","U-6 Rate","MoM","%",1,true,v=>v>=8.5?"th":v>=7.5?"tm":"tl"),
+    fredCard("PAYEMS","NFP Change","MoM","K",0,false,v=>v<0?"th":v<100?"tm":"tl"),
+    fredCard("ICSA","Initial Claims","WoW","K",0,true,v=>v>=250?"th":v>=220?"tm":"tl"),
+    fredCard("CCSA","Continuing Claims","WoW","K",0,true,v=>v>=2200?"th":v>=1900?"tm":"tl"),
+    fredCard("JTSJOL","JOLTS Openings","MoM","K",0,false,()=>"tl"),
+    fredCard("SAHMREALTIME","Sahm Rule","MoM","",2,true,v=>v>=.5?"th":v>=.3?"tm":"tl"),
+  ].join("");
+}
+
+function renderInflation(){
+  document.getElementById("inflation").innerHTML=[
+    fredCard("PCEPILFE","Core PCE YoY","MoM","%",1,true,v=>v>=3?"th":v>=2.5?"tm":"tl"),
+    fredCard("PCETRIM12M159SFRBDAL","Trimmed Mean PCE","MoM","%",2,true,v=>v>=3?"th":v>=2.5?"tm":"tl"),
+    fredCard("DGS2","2Y Treasury","WoW","%",2,false,()=>""),
+    fredCard("DGS10","10Y Treasury","WoW","%",2,false,()=>""),
+    fredCard("T10Y2Y","2s10s Spread","WoW","bp",2,false,v=>v<=-.2?"th":v<=0?"tm":"tl"),
+    fredCard("BAMLH0A0HYM2","HY OAS Spread","WoW","bp",0,true,v=>v>=500?"th":v>=400?"tm":"tl"),
+    fredCard("DCOILBRENTEU","Brent Crude","WoW","$",2,true,v=>v>=100?"th":v>=85?"tm":"tl"),
+    fredCard("DCOILWTIC","WTI Crude","WoW","$",2,true,v=>v>=90?"th":v>=80?"tm":"tl"),
+    fredCard("UMCSENT","Consumer Sentiment","MoM","",1,false,v=>v<=55?"th":v<=65?"tm":"tl"),
+    fredCard("PSAVERT","Savings Rate","MoM","%",1,false,v=>v<=3?"th":v<=4?"tm":"tl"),
+    fredCard("DRCCLACBS","CC Delinquencies","QoQ","%",2,true,v=>v>=3.5?"th":v>=2.8?"tm":"tl"),
+  ].join("");
+}
+
+function renderMarket(){
+  const q=fmpQuotes.indices||{};const c=fmpQuotes.credit||{};
+  const cards=[];
+  // S&P 500
+  const sp=q["^GSPC"];
+  if(sp){
+    const cls=sp.changePct>=0?"cup":"cdn";
+    cards.push(buildCard("SP500","S&P 500",fmt(sp.price,1),`${sp.changePct>=0?"+":""}${fmt(sp.changePct,2)}% WoW`,cls,"WoW",sp.changePct<-1?"th":sp.changePct<0?"tm":"tl",false));
+  }
+  // VIX
+  const vix=q["^VIX"];
+  if(vix){
+    const cls=vix.changePct>=0?"cdn":"cup";
+    cards.push(buildCard("VIX","VIX",fmt(vix.price,2),`${vix.changePct>=0?"+":""}${fmt(vix.changePct,2)}%`,cls,"WoW",vix.price>30?"th":vix.price>20?"tm":"tl",false));
+  }
+  // VVIX
+  const vvix=q["^VVIX"];
+  if(vvix){
+    const cls=vvix.changePct>=0?"cdn":"cup";
+    cards.push(buildCard("VVIX","VVIX",fmt(vvix.price,1),`${vvix.changePct>=0?"+":""}${fmt(vvix.changePct,2)}%`,cls,"WoW",vvix.price>140?"th":vvix.price>110?"tm":"tl",false));
+  }
+  // MOVE (from FRED FEDFUNDS as placeholder — agent should wire to actual source)
+  cards.push(buildCard("MOVE","MOVE Index","—","—","cfl","WoW","",false));
+  // HYG
+  const hyg=c["HYG"];
+  if(hyg){
+    const cls=hyg.changePct>=0?"cup":"cdn";
+    cards.push(buildCard("HYG","HYG (Credit Proxy)","$"+fmt(hyg.price,2),`${hyg.changePct>=0?"+":""}${fmt(hyg.changePct,2)}%`,cls,"WoW",hyg.price<76?"th":hyg.price<79?"tm":"tl",false));
+  }
+  document.getElementById("market").innerHTML=cards.join("");
+}
+
+function renderSectors(){
+  const q=fmpQuotes.sectors||{};
+  const names={XLE:"Energy",XLF:"Financials",XLK:"Technology",XLY:"Cons. Discretionary",XLV:"Healthcare",XLI:"Industrials",XLP:"Cons. Staples",XLU:"Utilities",XLRE:"Real Estate",XLC:"Communication",XLB:"Materials"};
+  document.getElementById("sectors").innerHTML=Object.entries(names).map(([sym,name])=>{
+    const s=q[sym];if(!s)return"";
+    const wk=s.changePct||0;
+    const wkC=wk>=0?"cup":"cdn";
+    // Compute rough metrics from available data
+    const pe=s.pe?fmt(s.pe,1):"—";
+    return `<div class="sec-card">
+      <div class="sec-name"><span>${name}</span><span style="color:var(--t2)">${sym}</span></div>
+      <div class="sec-price">$${fmt(s.price,2)}</div>
+      <div class="sec-row">
+        <div class="sec-metric"><span class="ml">WoW</span><span class="${wkC}">${wk>=0?"+":""}${fmt(wk,2)}%</span></div>
+        <div class="sec-metric"><span class="ml">P/E</span><span>${pe}</span></div>
+        <div class="sec-metric"><span class="ml">52w Hi</span><span>$${s.yearHigh?fmt(s.yearHigh,0):"—"}</span></div>
+        <div class="sec-metric"><span class="ml">52w Lo</span><span>$${s.yearLow?fmt(s.yearLow,0):"—"}</span></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ═══ Charts ═══
+function renderCharts(){
+  Object.values(charts).forEach(c=>c.destroy&&c.destroy());charts={};
+  const copts={responsive:true,maintainAspectRatio:false,animation:{duration:400},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:8}}},y:{grid:{color:"#1a1a2a"},ticks:{font:{size:8}}}}};
+  function mkOpts(showLegend=false){const o=JSON.parse(JSON.stringify(copts));if(showLegend)o.plugins.legend={display:true,labels:{boxWidth:8,font:{size:9}}};return o;}
+  function obs(id){const s=fredData[id];return s&&s.observations?s.observations.slice().reverse():[];}
+
+  // Oil
+  const wti=obs("DCOILWTIC"),brent=obs("DCOILBRENTEU");
+  if(wti.length){
+    charts.oil=new Chart(document.getElementById("cOil").getContext("2d"),{type:"line",data:{labels:wti.map(o=>o.date),datasets:[
+      {label:"WTI",data:wti.map(o=>o.value),borderColor:"#faad14",borderWidth:1.5,pointRadius:0,tension:.3},
+      {label:"Brent",data:brent.map(o=>o.value),borderColor:"#eb2f96",borderWidth:1.5,pointRadius:0,tension:.3},
+    ]},options:mkOpts(true)});
+  }
+
+  // Futures placeholder
+  const fwdMo=["Spot","May 26","Jun 26","Jul 26","Sep 26","Dec 26","Mar 27","Jun 27","Dec 27"];
+  const wtiSpot=gL("DCOILWTIC").v||96;
+  const wtiFwd=[wtiSpot,wtiSpot*.985,wtiSpot*.97,wtiSpot*.955,wtiSpot*.93,wtiSpot*.89,wtiSpot*.86,wtiSpot*.835,wtiSpot*.80];
+  const brentSpot=gL("DCOILBRENTEU").v||108;
+  const brentFwd=[brentSpot,brentSpot*.985,brentSpot*.97,brentSpot*.955,brentSpot*.93,brentSpot*.89,brentSpot*.86,brentSpot*.835,brentSpot*.80];
+  charts.fwd=new Chart(document.getElementById("cFwd").getContext("2d"),{type:"line",data:{labels:fwdMo,datasets:[
+    {label:"WTI Fwd",data:wtiFwd,borderColor:"#faad14",backgroundColor:"#faad1415",borderWidth:2,pointRadius:4,pointBackgroundColor:"#faad14",pointBorderColor:"#0a0a0f",pointBorderWidth:2,tension:.3,fill:true},
+    {label:"Brent Fwd",data:brentFwd,borderColor:"#eb2f96",backgroundColor:"#eb2f9615",borderWidth:2,pointRadius:4,pointBackgroundColor:"#eb2f96",pointBorderColor:"#0a0a0f",pointBorderWidth:2,tension:.3,fill:true},
+  ]},options:mkOpts(true)});
+
+  // Sahm + threshold
+  const sahm=obs("SAHMREALTIME");
+  if(sahm.length){
+    charts.sahm=new Chart(document.getElementById("cSa").getContext("2d"),{type:"line",data:{labels:sahm.map(o=>o.date),datasets:[
+      {label:"Sahm Rule",data:sahm.map(o=>o.value),borderColor:"#36cfc9",backgroundColor:"#36cfc918",borderWidth:1.5,pointRadius:0,tension:.3,fill:true},
+      {label:"Threshold (0.50)",data:sahm.map(()=>0.5),borderColor:"#ff4d4f88",borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},options:mkOpts(true)});
+  }
+
+  // Claims + 250K line
+  const cl=obs("ICSA");
+  if(cl.length){
+    charts.claims=new Chart(document.getElementById("cCl").getContext("2d"),{type:"line",data:{labels:cl.map(o=>o.date),datasets:[
+      {label:"Claims (K)",data:cl.map(o=>o.value/1000),borderColor:"#faad14",backgroundColor:"#faad1415",borderWidth:1.5,pointRadius:0,tension:.3,fill:true},
+      {label:"Warning (250K)",data:cl.map(()=>250),borderColor:"#ff4d4f88",borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},options:mkOpts(true)});
+  }
+
+  // HY OAS + 500bp
+  const hy=obs("BAMLH0A0HYM2");
+  if(hy.length){
+    charts.hyoas=new Chart(document.getElementById("cHY").getContext("2d"),{type:"line",data:{labels:hy.map(o=>o.date),datasets:[
+      {label:"HY OAS (bp)",data:hy.map(o=>o.value),borderColor:"#9254de",backgroundColor:"#9254de15",borderWidth:1.5,pointRadius:0,tension:.3,fill:true},
+      {label:"Stress (500bp)",data:hy.map(()=>500),borderColor:"#ff4d4f88",borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},options:mkOpts(true)});
+  }
+
+  // 2s10s + zero
+  const yc=obs("T10Y2Y");
+  if(yc.length){
+    charts.yc=new Chart(document.getElementById("cY").getContext("2d"),{type:"line",data:{labels:yc.map(o=>o.date),datasets:[
+      {label:"2s10s",data:yc.map(o=>o.value),borderColor:"#4096ff",backgroundColor:"#4096ff15",borderWidth:1.5,pointRadius:0,tension:.3,fill:true},
+      {label:"Inversion (0)",data:yc.map(()=>0),borderColor:"#ff4d4f66",borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},options:mkOpts(true)});
+  }
+
+  // S&P vs 200-DMA (placeholder — agent should fetch FMP historical)
+  // For now just show what FRED has or leave empty
+
+  // Fed Funds vs Core PCE
+  const ff=obs("FEDFUNDS"),pce=obs("PCEPILFE");
+  if(ff.length&&pce.length){
+    charts.ff=new Chart(document.getElementById("cFF").getContext("2d"),{type:"line",data:{labels:ff.map(o=>o.date),datasets:[
+      {label:"Fed Funds",data:ff.map(o=>o.value),borderColor:"#faad14",borderWidth:1.5,pointRadius:0,tension:.2,fill:false},
+      {label:"Core PCE",data:pce.map(o=>o.value),borderColor:"#ff4d4f",borderWidth:1.5,pointRadius:0,tension:.3,fill:false},
+      {label:"2% Target",data:ff.map(()=>2),borderColor:"#52c41a55",borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},options:mkOpts(true)});
+  }
+}
+
+// ═══ Init ═══
+document.addEventListener("DOMContentLoaded",()=>{
+  fetchAll();
+  autoTimer=setInterval(fetchAll,AUTO_REFRESH);
+});
+</script>
+</body>
+</html>
