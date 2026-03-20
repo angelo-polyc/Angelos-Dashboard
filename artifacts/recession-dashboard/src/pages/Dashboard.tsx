@@ -27,8 +27,8 @@ ChartJS.register(
   Filler
 );
 
-ChartJS.defaults.color = "#664422";
-ChartJS.defaults.borderColor = "#181818";
+ChartJS.defaults.color = "#cc8833";
+ChartJS.defaults.borderColor = "#2a2a2a";
 ChartJS.defaults.font.family = "Consolas,'SF Mono',Monaco,Menlo,monospace";
 
 const crosshairPlugin: Plugin = {
@@ -112,9 +112,9 @@ const crosshairPlugin: Plugin = {
       if (dbx + dbw > a.right) dbx = a.right - dbw;
       ctx.fillStyle = "rgba(0,0,0,0.94)";
       ctx.fillRect(dbx, a.bottom + 2, dbw, dbh);
-      ctx.strokeStyle = "#333333";
+      ctx.strokeStyle = "#666666";
       ctx.strokeRect(dbx, a.bottom + 2, dbw, dbh);
-      ctx.fillStyle = "#cc7a29";
+      ctx.fillStyle = "#e89030";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(dtxt, dbx + dbw / 2, a.bottom + 2 + dbh / 2);
@@ -240,14 +240,14 @@ const CHART_BASE_OPTS: ChartOptions<"line"> = {
       ticks: {
         maxTicksLimit: 7,
         font: { size: 7, family: "Consolas,'SF Mono',Monaco,Menlo,monospace" },
-        color: "#664422",
+        color: "#cc8833",
       },
     },
     y: {
-      grid: { color: "#181818" },
+      grid: { color: "#2a2a2a" },
       ticks: {
         font: { size: 7, family: "Consolas,'SF Mono',Monaco,Menlo,monospace" },
-        color: "#664422",
+        color: "#cc8833",
       },
     },
   },
@@ -261,7 +261,7 @@ function mkOpts(showLegend = false): ChartOptions<"line"> {
       labels: {
         boxWidth: 6,
         font: { size: 8, family: "Consolas,'SF Mono',Monaco,Menlo,monospace" },
-        color: "#cc7a29",
+        color: "#e89030",
       },
     };
   }
@@ -573,7 +573,7 @@ export default function Dashboard() {
               {[1, 2, 3].map((i) => (
                 <div className="ga" key={i}>
                   <div className="gl">—</div>
-                  <div className="gv" style={{ color: "#333" }}>—</div>
+                  <div className="gv" style={{ color: "#888" }}>—</div>
                 </div>
               ))}
             </>
@@ -626,7 +626,7 @@ export default function Dashboard() {
                   }}
                   options={mkOpts(true)}
                 />
-              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#664422", fontFamily: "Consolas,monospace", fontSize: 9 }}>LOADING...</div>}
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#cc8833", fontFamily: "Consolas,monospace", fontSize: 9 }}>LOADING...</div>}
             </div>
           </div>
           <div className="cc">
@@ -849,7 +849,7 @@ export default function Dashboard() {
               <div className="sec-card" key={sym}>
                 <div className="sec-name">
                   <span>{name}</span>
-                  <span style={{ color: "var(--t2)" }}>{sym}</span>
+                  <span style={{ color: "var(--amber3)" }}>{sym}</span>
                 </div>
                 <div className="sec-price">${fmt(s.price, 2)}</div>
                 <div className="sec-row">

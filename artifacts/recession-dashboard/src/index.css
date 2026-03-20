@@ -1,15 +1,15 @@
 :root {
   --bg: #000000;
   --card: #000000;
-  --bdr: #333333;
-  --amber: #ff9933;
-  --amber2: #cc7a29;
-  --amber3: #664422;
+  --bdr: #444444;
+  --amber: #ffaa44;
+  --amber2: #e89030;
+  --amber3: #bb7722;
   --grey: #dddddd;
-  --dim: #888888;
-  --up: #33ff33;
-  --dn: #ff3333;
-  --warn: #ffff33;
+  --dim: #aaaaaa;
+  --up: #44ff44;
+  --dn: #ff4444;
+  --warn: #ffff55;
   --mono: Consolas, 'SF Mono', Monaco, Menlo, monospace;
 }
 
