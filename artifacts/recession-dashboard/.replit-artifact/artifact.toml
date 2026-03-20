@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Recession Risk Dashboard"
+version = "1.0.0"
+id = "artifacts/recession-dashboard"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20363
+
+[services.development]
+run = "pnpm --filter @workspace/recession-dashboard run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/recession-dashboard", "run", "build" ]
+publicDir = "artifacts/recession-dashboard/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20363"
+BASE_PATH = "/"
