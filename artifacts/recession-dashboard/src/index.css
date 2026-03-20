@@ -249,8 +249,11 @@ body {
   border: 1px solid var(--bdr);
   border-radius: 10px;
   padding: 14px;
+  display: flex;
+  flex-direction: column;
 }
 .cc .ct { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--t2); margin-bottom: 10px; }
+.ch { position: relative; height: 260px; flex: 1; min-height: 0; }
 
 .sec-grid {
   display: grid;

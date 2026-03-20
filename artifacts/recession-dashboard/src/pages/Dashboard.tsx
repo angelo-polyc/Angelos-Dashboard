@@ -425,25 +425,26 @@ export default function Dashboard() {
                 ✕
               </button>
             </div>
-            <Line
-              data={{
-                labels: obsChronological(fredData, id).map((o) => o.date),
-                datasets: [
-                  {
-                    label: fredData[id]?.meta?.name || id,
-                    data: obsChronological(fredData, id).map((o) => o.value),
-                    borderColor: "#4096ff",
-                    backgroundColor: "#4096ff18",
-                    borderWidth: 1.5,
-                    pointRadius: 0,
-                    tension: 0.3,
-                    fill: true,
-                  },
-                ],
-              }}
-              options={mkOpts(false)}
-              style={{ height: 180 }}
-            />
+            <div className="ch">
+              <Line
+                data={{
+                  labels: obsChronological(fredData, id).map((o) => o.date),
+                  datasets: [
+                    {
+                      label: fredData[id]?.meta?.name || id,
+                      data: obsChronological(fredData, id).map((o) => o.value),
+                      borderColor: "#4096ff",
+                      backgroundColor: "#4096ff18",
+                      borderWidth: 1.5,
+                      pointRadius: 0,
+                      tension: 0.3,
+                      fill: true,
+                    },
+                  ],
+                }}
+                options={mkOpts(false)}
+              />
+            </div>
           </div>
         )}
       </>
@@ -611,133 +612,141 @@ export default function Dashboard() {
         <div className="cg">
           <div className="cc">
             <div className="ct">Oil — Spot (WTI & Brent) · 5Y</div>
-            {wtiObs.length > 0 ? (
-              <Line
-                data={{
-                  labels: wtiObs.map((o) => o.date),
-                  datasets: [
-                    { label: "WTI", data: wtiObs.map((o) => o.value), borderColor: "#faad14", borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-                    { label: "Brent", data: brentObs.map((o) => o.value), borderColor: "#eb2f96", borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-                  ],
-                }}
-                options={mkOpts(true)}
-                style={{ height: 180 }}
-              />
-            ) : <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            <div className="ch">
+              {wtiObs.length > 0 ? (
+                <Line
+                  data={{
+                    labels: wtiObs.map((o) => o.date),
+                    datasets: [
+                      { label: "WTI", data: wtiObs.map((o) => o.value), borderColor: "#faad14", borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+                      { label: "Brent", data: brentObs.map((o) => o.value), borderColor: "#eb2f96", borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+                    ],
+                  }}
+                  options={mkOpts(true)}
+                />
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            </div>
           </div>
           <div className="cc">
             <div className="ct">Oil — Futures Forward Curve (Estimated)</div>
-            <Line
-              data={{
-                labels: fwdMo,
-                datasets: [
-                  { label: "WTI Fwd", data: wtiFwd, borderColor: "#faad14", backgroundColor: "#faad1415", borderWidth: 2, pointRadius: 4, pointBackgroundColor: "#faad14", tension: 0.3, fill: true },
-                  { label: "Brent Fwd", data: brentFwd, borderColor: "#eb2f96", backgroundColor: "#eb2f9615", borderWidth: 2, pointRadius: 4, pointBackgroundColor: "#eb2f96", tension: 0.3, fill: true },
-                ],
-              }}
-              options={mkOpts(true)}
-              style={{ height: 180 }}
-            />
+            <div className="ch">
+              <Line
+                data={{
+                  labels: fwdMo,
+                  datasets: [
+                    { label: "WTI Fwd", data: wtiFwd, borderColor: "#faad14", backgroundColor: "#faad1415", borderWidth: 2, pointRadius: 4, pointBackgroundColor: "#faad14", tension: 0.3, fill: true },
+                    { label: "Brent Fwd", data: brentFwd, borderColor: "#eb2f96", backgroundColor: "#eb2f9615", borderWidth: 2, pointRadius: 4, pointBackgroundColor: "#eb2f96", tension: 0.3, fill: true },
+                  ],
+                }}
+                options={mkOpts(true)}
+              />
+            </div>
           </div>
         </div>
 
         <div className="cg">
           <div className="cc">
             <div className="ct">Sahm Rule · 5Y</div>
-            {sahmObs.length > 0 ? (
-              <Line
-                data={{
-                  labels: sahmObs.map((o) => o.date),
-                  datasets: [
-                    { label: "Sahm Rule", data: sahmObs.map((o) => o.value), borderColor: "#36cfc9", backgroundColor: "#36cfc918", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                    { label: "Threshold (0.50)", data: sahmObs.map(() => 0.5), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
-                  ],
-                }}
-                options={mkOpts(true)}
-                style={{ height: 180 }}
-              />
-            ) : <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            <div className="ch">
+              {sahmObs.length > 0 ? (
+                <Line
+                  data={{
+                    labels: sahmObs.map((o) => o.date),
+                    datasets: [
+                      { label: "Sahm Rule", data: sahmObs.map((o) => o.value), borderColor: "#36cfc9", backgroundColor: "#36cfc918", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
+                      { label: "Threshold (0.50)", data: sahmObs.map(() => 0.5), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                    ],
+                  }}
+                  options={mkOpts(true)}
+                />
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            </div>
           </div>
           <div className="cc">
             <div className="ct">Initial Claims (K) · 5Y</div>
-            {claimsObs.length > 0 ? (
-              <Line
-                data={{
-                  labels: claimsObs.map((o) => o.date),
-                  datasets: [
-                    { label: "Claims (K)", data: claimsObs.map((o) => o.value / 1000), borderColor: "#faad14", backgroundColor: "#faad1415", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                    { label: "Warning (250K)", data: claimsObs.map(() => 250), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
-                  ],
-                }}
-                options={mkOpts(true)}
-                style={{ height: 180 }}
-              />
-            ) : <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            <div className="ch">
+              {claimsObs.length > 0 ? (
+                <Line
+                  data={{
+                    labels: claimsObs.map((o) => o.date),
+                    datasets: [
+                      { label: "Claims (K)", data: claimsObs.map((o) => o.value / 1000), borderColor: "#faad14", backgroundColor: "#faad1415", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
+                      { label: "Warning (250K)", data: claimsObs.map(() => 250), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                    ],
+                  }}
+                  options={mkOpts(true)}
+                />
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            </div>
           </div>
         </div>
 
         <div className="cg">
           <div className="cc">
             <div className="ct">HY OAS Spread · 5Y</div>
-            {hyObs.length > 0 ? (
-              <Line
-                data={{
-                  labels: hyObs.map((o) => o.date),
-                  datasets: [
-                    { label: "HY OAS (bp)", data: hyObs.map((o) => o.value), borderColor: "#9254de", backgroundColor: "#9254de15", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                    { label: "Stress (500bp)", data: hyObs.map(() => 500), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
-                  ],
-                }}
-                options={mkOpts(true)}
-                style={{ height: 180 }}
-              />
-            ) : <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            <div className="ch">
+              {hyObs.length > 0 ? (
+                <Line
+                  data={{
+                    labels: hyObs.map((o) => o.date),
+                    datasets: [
+                      { label: "HY OAS (bp)", data: hyObs.map((o) => o.value), borderColor: "#9254de", backgroundColor: "#9254de15", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
+                      { label: "Stress (500bp)", data: hyObs.map(() => 500), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                    ],
+                  }}
+                  options={mkOpts(true)}
+                />
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            </div>
           </div>
           <div className="cc">
             <div className="ct">2s10s Yield Curve · 5Y</div>
-            {ycObs.length > 0 ? (
-              <Line
-                data={{
-                  labels: ycObs.map((o) => o.date),
-                  datasets: [
-                    { label: "2s10s", data: ycObs.map((o) => o.value), borderColor: "#4096ff", backgroundColor: "#4096ff15", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                    { label: "Inversion (0)", data: ycObs.map(() => 0), borderColor: "#ff4d4f66", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
-                  ],
-                }}
-                options={mkOpts(true)}
-                style={{ height: 180 }}
-              />
-            ) : <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            <div className="ch">
+              {ycObs.length > 0 ? (
+                <Line
+                  data={{
+                    labels: ycObs.map((o) => o.date),
+                    datasets: [
+                      { label: "2s10s", data: ycObs.map((o) => o.value), borderColor: "#4096ff", backgroundColor: "#4096ff15", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
+                      { label: "Inversion (0)", data: ycObs.map(() => 0), borderColor: "#ff4d4f66", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                    ],
+                  }}
+                  options={mkOpts(true)}
+                />
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            </div>
           </div>
         </div>
 
         <div className="cg">
           <div className="cc">
             <div className="ct">S&P 500 vs 200-DMA · 5Y</div>
-            {spHistory.length > 0 ? (
-              <Line
-                data={sp500ChartData}
-                options={mkOpts(true)}
-                style={{ height: 180 }}
-              />
-            ) : <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            <div className="ch">
+              {spHistory.length > 0 ? (
+                <Line
+                  data={sp500ChartData}
+                  options={mkOpts(true)}
+                />
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            </div>
           </div>
           <div className="cc">
             <div className="ct">Fed Funds vs Core PCE · 5Y</div>
-            {ffObs.length > 0 ? (
-              <Line
-                data={{
-                  labels: ffObs.map((o) => o.date),
-                  datasets: [
-                    { label: "Fed Funds", data: ffObs.map((o) => o.value), borderColor: "#faad14", borderWidth: 1.5, pointRadius: 0, tension: 0.2, fill: false },
-                    { label: "Core PCE", data: pceObs.map((o) => o.value), borderColor: "#ff4d4f", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false },
-                    { label: "2% Target", data: ffObs.map(() => 2), borderColor: "#52c41a55", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
-                  ],
-                }}
-                options={mkOpts(true)}
-                style={{ height: 180 }}
-              />
-            ) : <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            <div className="ch">
+              {ffObs.length > 0 ? (
+                <Line
+                  data={{
+                    labels: ffObs.map((o) => o.date),
+                    datasets: [
+                      { label: "Fed Funds", data: ffObs.map((o) => o.value), borderColor: "#faad14", borderWidth: 1.5, pointRadius: 0, tension: 0.2, fill: false },
+                      { label: "Core PCE", data: pceObs.map((o) => o.value), borderColor: "#ff4d4f", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false },
+                      { label: "2% Target", data: ffObs.map(() => 2), borderColor: "#52c41a55", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                    ],
+                  }}
+                  options={mkOpts(true)}
+                />
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+            </div>
           </div>
         </div>
 
