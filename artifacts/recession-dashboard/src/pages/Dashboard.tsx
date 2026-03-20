@@ -27,8 +27,9 @@ ChartJS.register(
   Filler
 );
 
-ChartJS.defaults.color = "#55556a";
-ChartJS.defaults.borderColor = "#1a1a2a";
+ChartJS.defaults.color = "#664422";
+ChartJS.defaults.borderColor = "#181818";
+ChartJS.defaults.font.family = "Consolas,'SF Mono',Monaco,Menlo,monospace";
 
 const crosshairPlugin: Plugin = {
   id: "xhair",
@@ -62,7 +63,7 @@ const crosshairPlugin: Plugin = {
     const xIdx = Math.round(xScale.getValueForPixel(cr.x) ?? 0);
     const labels = ch.data.labels as string[];
     const ds = ch.data.datasets;
-    const pad = 8, bh = 18, gap = 2;
+    const pad = 8, bh = 16, gap = 1;
     const visible = ds.filter((d) => !d.hidden && d.data[xIdx] != null);
     const totalH = visible.length * (bh + gap);
     let startY = cr.y - totalH / 2;
@@ -73,7 +74,7 @@ const crosshairPlugin: Plugin = {
       if (d.hidden) return;
       const val = xIdx >= 0 && xIdx < d.data.length ? d.data[xIdx] : null;
       if (val == null) return;
-      const color = (d.borderColor as string) || "#fff";
+      const color = (d.borderColor as string) || "#ff9933";
       const num = typeof val === "number" ? val : 0;
       const txt =
         Math.abs(num) > 1000
@@ -81,48 +82,42 @@ const crosshairPlugin: Plugin = {
           : Math.abs(num) > 10
           ? num.toFixed(1)
           : num.toFixed(2);
-      ctx.font = "600 10px JetBrains Mono,monospace";
+      ctx.font = "700 9px Consolas,'SF Mono',Monaco,Menlo,monospace";
       const tw = ctx.measureText(txt).width;
-      const bw = tw + 22;
+      const bw = tw + 18;
       let bx = cr.x + pad;
       if (bx + bw > a.right) bx = cr.x - pad - bw;
       const by = startY + vi * (bh + gap);
-      ctx.fillStyle = "rgba(10,10,15,0.92)";
-      ctx.strokeStyle = color + "66";
+      ctx.fillStyle = "rgba(0,0,0,0.94)";
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.strokeStyle = color;
       ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(bx, by, bw, bh, 4);
-      ctx.fill();
-      ctx.stroke();
+      ctx.strokeRect(bx, by, bw, bh);
       ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(bx + 8, by + bh / 2, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#e8e8ed";
+      ctx.fillRect(bx + 4, by + bh / 2 - 3, 6, 6);
+      ctx.fillStyle = "#ff9933";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(txt, bx + 16, by + bh / 2);
+      ctx.fillText(txt, bx + 14, by + bh / 2);
       vi++;
     });
 
     if (xIdx >= 0 && xIdx < labels.length) {
       const dtxt = labels[xIdx];
-      ctx.font = "500 8px JetBrains Mono,monospace";
+      ctx.font = "700 7px Consolas,'SF Mono',Monaco,Menlo,monospace";
       const dtw = ctx.measureText(dtxt).width;
-      const dbw = dtw + 12, dbh = 16;
+      const dbw = dtw + 10, dbh = 14;
       let dbx = cr.x - dbw / 2;
       if (dbx < a.left) dbx = a.left;
       if (dbx + dbw > a.right) dbx = a.right - dbw;
-      ctx.fillStyle = "rgba(10,10,15,0.92)";
-      ctx.strokeStyle = "rgba(64,150,255,0.25)";
-      ctx.beginPath();
-      ctx.roundRect(dbx, a.bottom + 3, dbw, dbh, 3);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = "#8888a0";
+      ctx.fillStyle = "rgba(0,0,0,0.94)";
+      ctx.fillRect(dbx, a.bottom + 2, dbw, dbh);
+      ctx.strokeStyle = "#333333";
+      ctx.strokeRect(dbx, a.bottom + 2, dbw, dbh);
+      ctx.fillStyle = "#cc7a29";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(dtxt, dbx + dbw / 2, a.bottom + 3 + dbh / 2);
+      ctx.fillText(dtxt, dbx + dbw / 2, a.bottom + 2 + dbh / 2);
     }
     ctx.restore();
   },
@@ -173,7 +168,7 @@ function fmt(n: number | null | undefined, d = 1): string {
 }
 
 function rc(v: number): string {
-  return v >= 65 ? "#ff4d4f" : v >= 40 ? "#faad14" : "#52c41a";
+  return v >= 65 ? "#ff3333" : v >= 40 ? "#ffff33" : "#33ff33";
 }
 function rl(v: number): string {
   return v >= 65 ? "ELEVATED" : v >= 40 ? "CAUTIOUS" : "CONTAINED";
@@ -233,7 +228,7 @@ function threatClass(v: number | null, threshFn?: (v: number) => string): string
 const CHART_BASE_OPTS: ChartOptions<"line"> = {
   responsive: true,
   maintainAspectRatio: false,
-  animation: { duration: 400 },
+  animation: { duration: 200 },
   interaction: { mode: "index", intersect: false },
   plugins: {
     legend: { display: false },
@@ -242,11 +237,18 @@ const CHART_BASE_OPTS: ChartOptions<"line"> = {
   scales: {
     x: {
       grid: { display: false },
-      ticks: { maxTicksLimit: 8, font: { size: 8 } },
+      ticks: {
+        maxTicksLimit: 7,
+        font: { size: 7, family: "Consolas,'SF Mono',Monaco,Menlo,monospace" },
+        color: "#664422",
+      },
     },
     y: {
-      grid: { color: "#1a1a2a" },
-      ticks: { font: { size: 8 } },
+      grid: { color: "#181818" },
+      ticks: {
+        font: { size: 7, family: "Consolas,'SF Mono',Monaco,Menlo,monospace" },
+        color: "#664422",
+      },
     },
   },
 };
@@ -256,7 +258,11 @@ function mkOpts(showLegend = false): ChartOptions<"line"> {
   if (showLegend && o.plugins) {
     o.plugins.legend = {
       display: true,
-      labels: { boxWidth: 8, font: { size: 9 } },
+      labels: {
+        boxWidth: 6,
+        font: { size: 8, family: "Consolas,'SF Mono',Monaco,Menlo,monospace" },
+        color: "#cc7a29",
+      },
     };
   }
   return o;
@@ -291,7 +297,7 @@ export default function Dashboard() {
       const [fredRes, fmpRes, spRes] = await Promise.all([
         fetch(`${BASE}/api/fred-bulk`).then((r) => r.json()),
         fetch(`${BASE}/api/fmp/quotes`).then((r) => r.json()),
-        fetch(`${BASE}/api/fmp/historical/%5EGSPC`).then((r) => r.json()),
+        fetch(`${BASE}/api/fmp/historical/SPY`).then((r) => r.json()),
       ]);
       setFredData(fredRes);
       setFmpData(fmpRes);
@@ -407,7 +413,7 @@ export default function Dashboard() {
         >
           <div className="sl">
             <span>{label}</span>
-            {hasHistory && <span className="eh">▼</span>}
+            {hasHistory && <span className="eh">▸</span>}
           </div>
           <div className="sv">{valStr}</div>
           <div className={`sx ${chgC}`}>
@@ -458,8 +464,8 @@ export default function Dashboard() {
       {
         label: "S&P 500",
         data: spHistory.map((d) => d.close),
-        borderColor: "#4096ff",
-        borderWidth: 1.5,
+        borderColor: "#3399ff",
+        borderWidth: 1,
         pointRadius: 0,
         tension: 0.2,
         fill: false,
@@ -467,8 +473,8 @@ export default function Dashboard() {
       {
         label: "200-DMA",
         data: spDMA,
-        borderColor: "#ff4d4f",
-        borderWidth: 1.5,
+        borderColor: "#ff3333",
+        borderWidth: 1,
         borderDash: [5, 3],
         pointRadius: 0,
         tension: 0.2,
@@ -476,10 +482,6 @@ export default function Dashboard() {
       },
     ],
   };
-
-  const ivolQuote = fmpData.credit?.["IVOL"];
-  const moveCurrent = ivolQuote?.price ?? null;
-  const moveChangePct = ivolQuote?.changePct ?? null;
 
   const wtiObs = obsChronological(fredData, "DCOILWTICO");
   const brentObs = obsChronological(fredData, "DCOILBRENTEU");
@@ -514,31 +516,31 @@ export default function Dashboard() {
       {status === "loading" && Object.keys(fredData).length === 0 && (
         <div className="load-ov" id="loadOv">
           <div className="spinner" />
-          <div className="load-txt">Fetching macro data...</div>
+          <div className="load-txt">RCSSN &lt;GO&gt; Loading...</div>
         </div>
       )}
 
       <div className="hdr">
         <div className="hdr-l">
           <h1>
-            Recession <span>Risk</span> Monitor
+            RCSSN <span>&lt;GO&gt;</span>
           </h1>
           <div
             className={`pill ${
               status === "loading" ? "loading" : status === "live" ? "live" : "err"
             }`}
           >
-            {status === "loading" ? "Loading" : status === "live" ? "Live" : "Error"}
+            {status === "loading" ? "WAIT" : status === "live" ? "LIVE" : "ERR"}
           </div>
         </div>
         <div className="hdr-r">
-          <span className="lu">{lastUpdated ? `Updated ${lastUpdated}` : "—"}</span>
+          <span className="lu">{lastUpdated ? `UPD ${lastUpdated}` : "—"}</span>
           <button
             className="rbtn"
             onClick={handleManualRefresh}
             disabled={refreshing}
           >
-            ⟳ {refreshing ? "Refreshing..." : "Refresh"}
+            {refreshing ? "REFRESHING..." : "REFRESH"}
           </button>
         </div>
       </div>
@@ -570,8 +572,8 @@ export default function Dashboard() {
             <>
               {[1, 2, 3].map((i) => (
                 <div className="ga" key={i}>
-                  <div className="gl">Loading...</div>
-                  <div className="gv" style={{ color: "#55556a" }}>—</div>
+                  <div className="gl">—</div>
+                  <div className="gv" style={{ color: "#333" }}>—</div>
                 </div>
               ))}
             </>
@@ -618,13 +620,13 @@ export default function Dashboard() {
                   data={{
                     labels: wtiObs.map((o) => o.date),
                     datasets: [
-                      { label: "WTI", data: wtiObs.map((o) => o.value), borderColor: "#faad14", borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-                      { label: "Brent", data: brentObs.map((o) => o.value), borderColor: "#eb2f96", borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+                      { label: "WTI", data: wtiObs.map((o) => o.value), borderColor: "#ff9933", borderWidth: 1, pointRadius: 0, tension: 0.2 },
+                      { label: "Brent", data: brentObs.map((o) => o.value), borderColor: "#ff3399", borderWidth: 1, pointRadius: 0, tension: 0.2 },
                     ],
                   }}
                   options={mkOpts(true)}
                 />
-              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#55556a" }}>Loading...</div>}
+              ) : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#664422", fontFamily: "Consolas,monospace", fontSize: 9 }}>LOADING...</div>}
             </div>
           </div>
           <div className="cc">
@@ -634,8 +636,8 @@ export default function Dashboard() {
                 data={{
                   labels: fwdMo,
                   datasets: [
-                    { label: "WTI Fwd", data: wtiFwd, borderColor: "#faad14", backgroundColor: "#faad1415", borderWidth: 2, pointRadius: 4, pointBackgroundColor: "#faad14", tension: 0.3, fill: true },
-                    { label: "Brent Fwd", data: brentFwd, borderColor: "#eb2f96", backgroundColor: "#eb2f9615", borderWidth: 2, pointRadius: 4, pointBackgroundColor: "#eb2f96", tension: 0.3, fill: true },
+                    { label: "WTI Fwd", data: wtiFwd, borderColor: "#ff9933", backgroundColor: "#ff993310", borderWidth: 1, pointRadius: 3, pointBackgroundColor: "#ff9933", tension: 0.3, fill: true },
+                    { label: "Brent Fwd", data: brentFwd, borderColor: "#ff3399", backgroundColor: "#ff339910", borderWidth: 1, pointRadius: 3, pointBackgroundColor: "#ff3399", tension: 0.3, fill: true },
                   ],
                 }}
                 options={mkOpts(true)}
@@ -653,8 +655,8 @@ export default function Dashboard() {
                   data={{
                     labels: sahmObs.map((o) => o.date),
                     datasets: [
-                      { label: "Sahm Rule", data: sahmObs.map((o) => o.value), borderColor: "#36cfc9", backgroundColor: "#36cfc918", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                      { label: "Threshold (0.50)", data: sahmObs.map(() => 0.5), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                      { label: "Sahm Rule", data: sahmObs.map((o) => o.value), borderColor: "#33cccc", backgroundColor: "#33cccc0d", borderWidth: 1, pointRadius: 0, tension: 0.2, fill: true },
+                      { label: "Threshold (0.50)", data: sahmObs.map(() => 0.5), borderColor: "#ff333344", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
                     ],
                   }}
                   options={mkOpts(true)}
@@ -670,8 +672,8 @@ export default function Dashboard() {
                   data={{
                     labels: claimsObs.map((o) => o.date),
                     datasets: [
-                      { label: "Claims (K)", data: claimsObs.map((o) => o.value / 1000), borderColor: "#faad14", backgroundColor: "#faad1415", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                      { label: "Warning (250K)", data: claimsObs.map(() => 250), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                      { label: "Claims (K)", data: claimsObs.map((o) => o.value / 1000), borderColor: "#ff9933", backgroundColor: "#ff99330d", borderWidth: 1, pointRadius: 0, tension: 0.2, fill: true },
+                      { label: "Warning (250K)", data: claimsObs.map(() => 250), borderColor: "#ff333344", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
                     ],
                   }}
                   options={mkOpts(true)}
@@ -690,8 +692,8 @@ export default function Dashboard() {
                   data={{
                     labels: hyObs.map((o) => o.date),
                     datasets: [
-                      { label: "HY OAS (bp)", data: hyObs.map((o) => o.value), borderColor: "#9254de", backgroundColor: "#9254de15", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                      { label: "Stress (500bp)", data: hyObs.map(() => 500), borderColor: "#ff4d4f88", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                      { label: "HY OAS (bp)", data: hyObs.map((o) => o.value), borderColor: "#9966ff", backgroundColor: "#9966ff0d", borderWidth: 1, pointRadius: 0, tension: 0.2, fill: true },
+                      { label: "Stress (500bp)", data: hyObs.map(() => 500), borderColor: "#ff333344", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
                     ],
                   }}
                   options={mkOpts(true)}
@@ -707,8 +709,8 @@ export default function Dashboard() {
                   data={{
                     labels: ycObs.map((o) => o.date),
                     datasets: [
-                      { label: "2s10s", data: ycObs.map((o) => o.value), borderColor: "#4096ff", backgroundColor: "#4096ff15", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true },
-                      { label: "Inversion (0)", data: ycObs.map(() => 0), borderColor: "#ff4d4f66", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                      { label: "2s10s", data: ycObs.map((o) => o.value), borderColor: "#3399ff", backgroundColor: "#3399ff0d", borderWidth: 1, pointRadius: 0, tension: 0.2, fill: true },
+                      { label: "Inversion (0)", data: ycObs.map(() => 0), borderColor: "#ff333344", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
                     ],
                   }}
                   options={mkOpts(true)}
@@ -738,9 +740,9 @@ export default function Dashboard() {
                   data={{
                     labels: ffObs.map((o) => o.date),
                     datasets: [
-                      { label: "Fed Funds", data: ffObs.map((o) => o.value), borderColor: "#faad14", borderWidth: 1.5, pointRadius: 0, tension: 0.2, fill: false },
-                      { label: "Core PCE", data: pceObs.map((o) => o.value), borderColor: "#ff4d4f", borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false },
-                      { label: "2% Target", data: ffObs.map(() => 2), borderColor: "#52c41a55", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                      { label: "Fed Funds", data: ffObs.map((o) => o.value), borderColor: "#ff9933", borderWidth: 1, pointRadius: 0, tension: 0.2, fill: false },
+                      { label: "Core PCE", data: pceObs.map((o) => o.value), borderColor: "#ff3333", borderWidth: 1, pointRadius: 0, tension: 0.2, fill: false },
+                      { label: "2% Target", data: ffObs.map(() => 2), borderColor: "#33ff3344", borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
                     ],
                   }}
                   options={mkOpts(true)}
@@ -753,62 +755,39 @@ export default function Dashboard() {
         {/* Market & Volatility */}
         <div className="st">Market & Volatility</div>
         <div className="sg">
-          {q["^GSPC"] && (() => {
-            const sp = q["^GSPC"];
-            const cls = sp.changePct >= 0 ? "cup" : "cdn";
-            const thr = sp.changePct < -1 ? "th" : sp.changePct < 0 ? "tm" : "tl";
+          {q["SPY"] && (() => {
+            const spy = q["SPY"];
+            const cls = spy.changePct >= 0 ? "cup" : "cdn";
+            const thr = spy.changePct < -1 ? "th" : spy.changePct < 0 ? "tm" : "tl";
             return (
               <div className={`sc nc ${thr}`}>
-                <div className="sl"><span>S&P 500</span></div>
-                <div className="sv">{fmt(sp.price, 1)}</div>
+                <div className="sl"><span>SPY (S&P 500)</span></div>
+                <div className="sv">${fmt(spy.price, 2)}</div>
                 <div className={`sx ${cls}`}>
-                  <span>{sp.changePct >= 0 ? "+" : ""}{fmt(sp.changePct, 2)}%</span>
+                  <span>{spy.changePct >= 0 ? "+" : ""}{fmt(spy.changePct, 2)}%</span>
                   <span className="fq">DoD</span>
                 </div>
               </div>
             );
           })()}
 
-          {q["^VIX"] && (() => {
-            const vix = q["^VIX"];
-            const cls = vix.changePct >= 0 ? "cdn" : "cup";
-            const thr = vix.price > 30 ? "th" : vix.price > 20 ? "tm" : "tl";
+          {q["QQQ"] && (() => {
+            const qqq = q["QQQ"];
+            const cls = qqq.changePct >= 0 ? "cup" : "cdn";
+            const thr = qqq.changePct < -1 ? "th" : qqq.changePct < 0 ? "tm" : "tl";
             return (
               <div className={`sc nc ${thr}`}>
-                <div className="sl"><span>VIX</span></div>
-                <div className="sv">{fmt(vix.price, 2)}</div>
+                <div className="sl"><span>QQQ (Nasdaq)</span></div>
+                <div className="sv">${fmt(qqq.price, 2)}</div>
                 <div className={`sx ${cls}`}>
-                  <span>{vix.changePct >= 0 ? "+" : ""}{fmt(vix.changePct, 2)}%</span>
+                  <span>{qqq.changePct >= 0 ? "+" : ""}{fmt(qqq.changePct, 2)}%</span>
                   <span className="fq">DoD</span>
                 </div>
               </div>
             );
           })()}
 
-          {q["^VVIX"] && (() => {
-            const vvix = q["^VVIX"];
-            const cls = vvix.changePct >= 0 ? "cdn" : "cup";
-            const thr = vvix.price > 140 ? "th" : vvix.price > 110 ? "tm" : "tl";
-            return (
-              <div className={`sc nc ${thr}`}>
-                <div className="sl"><span>VVIX</span></div>
-                <div className="sv">{fmt(vvix.price, 1)}</div>
-                <div className={`sx ${cls}`}>
-                  <span>{vvix.changePct >= 0 ? "+" : ""}{fmt(vvix.changePct, 2)}%</span>
-                  <span className="fq">DoD</span>
-                </div>
-              </div>
-            );
-          })()}
-
-          <div className={`sc nc ${moveCurrent != null ? (moveCurrent > 25 ? "th" : moveCurrent > 20 ? "tm" : "tl") : ""}`}>
-            <div className="sl"><span>Rate Vol (IVOL)</span></div>
-            <div className="sv">{moveCurrent != null ? "$" + fmt(moveCurrent, 2) : "—"}</div>
-            <div className={`sx ${moveChangePct != null ? (moveChangePct >= 0 ? "cdn" : "cup") : "cfl"}`}>
-              {moveChangePct != null && <span>{moveChangePct >= 0 ? "+" : ""}{fmt(moveChangePct, 2)}%</span>}
-              <span className="fq">DoD</span>
-            </div>
-          </div>
+          <FredSignalCard id="VIXCLS" label="VIX" freq="DoD" unit="" dec={2} inv={true} threshFn={(v) => v >= 30 ? "th" : v >= 20 ? "tm" : "tl"} />
 
           {credit["HYG"] && (() => {
             const hyg = credit["HYG"];
@@ -816,10 +795,40 @@ export default function Dashboard() {
             const thr = hyg.price < 76 ? "th" : hyg.price < 79 ? "tm" : "tl";
             return (
               <div className={`sc nc ${thr}`}>
-                <div className="sl"><span>HYG (Credit Proxy)</span></div>
+                <div className="sl"><span>HYG (HY Credit)</span></div>
                 <div className="sv">${fmt(hyg.price, 2)}</div>
                 <div className={`sx ${cls}`}>
                   <span>{hyg.changePct >= 0 ? "+" : ""}{fmt(hyg.changePct, 2)}%</span>
+                  <span className="fq">DoD</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {credit["LQD"] && (() => {
+            const lqd = credit["LQD"];
+            const cls = lqd.changePct >= 0 ? "cup" : "cdn";
+            return (
+              <div className="sc nc tl">
+                <div className="sl"><span>LQD (IG Credit)</span></div>
+                <div className="sv">${fmt(lqd.price, 2)}</div>
+                <div className={`sx ${cls}`}>
+                  <span>{lqd.changePct >= 0 ? "+" : ""}{fmt(lqd.changePct, 2)}%</span>
+                  <span className="fq">DoD</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {credit["TLT"] && (() => {
+            const tlt = credit["TLT"];
+            const cls = tlt.changePct >= 0 ? "cup" : "cdn";
+            return (
+              <div className="sc nc tl">
+                <div className="sl"><span>TLT (20Y+ Treasury)</span></div>
+                <div className="sv">${fmt(tlt.price, 2)}</div>
+                <div className={`sx ${cls}`}>
+                  <span>{tlt.changePct >= 0 ? "+" : ""}{fmt(tlt.changePct, 2)}%</span>
                   <span className="fq">DoD</span>
                 </div>
               </div>
@@ -865,6 +874,11 @@ export default function Dashboard() {
             );
           })}
         </div>
+      </div>
+
+      <div className="btm-bar">
+        <span>FRED · FMP · 1H AUTO-REFRESH</span>
+        <span>DATA MAY BE DELAYED · NOT INVESTMENT ADVICE</span>
       </div>
     </>
   );

@@ -57,9 +57,14 @@ Full-stack macroeconomic monitoring tool.
   - Inflation/Rates: `PCEPILFE`, `PCETRIM12M159SFRBDAL`, `DGS2`, `DGS10`, `T10Y2Y`, `BAMLH0A0HYM2`
   - Sentiment/Credit: `UMCSENT`, `PSAVERT`, `DRCCLACBS`
   - Macro: `FEDFUNDS`, `A191RL1Q225SBEA`
-  - **NOTE**: `BAMLMOVE` does NOT exist on FRED. Use FMP IVOL ETF as a rate vol proxy.
-- FMP endpoints: quotes, sector performance, historical prices, oil futures (synthetic), econ calendar
-- FMP tickers: `^GSPC`, `^VIX`, `^VVIX`, sector ETFs (XLK, XLV, XLF, XLE, XLU, XLI, XLY, XLP, XLB, XLRE, XLC), credit (HYG, LQD, TLT, IVOL)
+  - VIX: `VIXCLS` (CBOE Volatility Index, daily)
+  - **NOTE**: `BAMLMOVE` does NOT exist on FRED. `IVOL` ETF was removed — rate vol shown via VIXCLS.
+- FMP endpoints: use `/stable/` prefix (NOT `/api/v3/` — legacy, broken for new keys)
+  - `/stable/profile?symbol=TICKER` — single symbol only; batch returns `[]`. Make individual calls per ticker.
+  - `/stable/historical-price-eod/full?symbol=TICKER` — historical OHLCV
+  - `/stable/sector-performance` — sector % change
+  - Index tickers `^GSPC`, `^VIX`, `^VVIX` do NOT work with `/stable/profile` — use SPY/QQQ/VIXCLS instead
+- FMP tickers: indices (SPY, QQQ), sector ETFs (XLK, XLV, XLF, XLE, XLU, XLI, XLY, XLP, XLB, XLRE, XLC), credit (HYG, LQD, TLT)
 - Cache flush: `POST /api/flush-cache`
 - Env secrets: `FRED_API_KEY`, `FMP_API_KEY`
 

@@ -46,12 +46,13 @@ const FRED_SERIES: Record<string, { name: string; limit: number }> = {
   DCOILBRENTEU: { name: "Brent Crude", limit: 1260 },
   FEDFUNDS: { name: "Fed Funds Rate", limit: 60 },
   A191RL1Q225SBEA: { name: "Real GDP Growth QoQ", limit: 20 },
+  VIXCLS: { name: "VIX Volatility Index", limit: 1260 },
 };
 
 const FMP_TICKERS = {
-  indices: ["^GSPC", "^VIX", "^VVIX"],
+  indices: ["SPY", "QQQ"],
   sectors: ["XLE", "XLF", "XLK", "XLY", "XLV", "XLI", "XLP", "XLU", "XLRE", "XLC", "XLB"],
-  credit: ["HYG", "IVOL"],
+  credit: ["HYG", "LQD", "TLT"],
 };
 
 router.get("/fred-bulk", async (req, res) => {
@@ -105,29 +106,46 @@ router.get("/fmp/quotes", async (req, res) => {
 
   try {
     const all = [...FMP_TICKERS.indices, ...FMP_TICKERS.sectors, ...FMP_TICKERS.credit];
-    const url = `https://financialmodelingprep.com/stable/quote?symbol=${all.join(",")}&apikey=${FMP_API_KEY}`;
-    const data = await fetchJSON(url) as Array<{
-      symbol: string; name: string; price: number; change: number;
-      changesPercentage: number; dayHigh: number; dayLow: number;
-      yearHigh: number; yearLow: number; volume: number; marketCap: number;
-      pe: number; previousClose: number; priceAvg50: number; priceAvg200: number;
-    }>;
-    const grouped: Record<string, Record<string, unknown>> = { indices: {}, sectors: {}, credit: {}, _raw: {} };
-    (data ?? []).forEach((q) => {
-      const sym = q.symbol;
-      const entry = {
-        symbol: sym, name: q.name, price: q.price,
-        change: q.change, changePct: q.changesPercentage,
-        dayHigh: q.dayHigh, dayLow: q.dayLow,
-        yearHigh: q.yearHigh, yearLow: q.yearLow,
-        volume: q.volume, marketCap: q.marketCap,
-        pe: q.pe, previousClose: q.previousClose,
-        priceAvg50: q.priceAvg50, priceAvg200: q.priceAvg200,
-      };
-      if (FMP_TICKERS.indices.includes(sym)) grouped.indices[sym] = entry;
-      else if (FMP_TICKERS.sectors.includes(sym)) grouped.sectors[sym] = entry;
-      else if (FMP_TICKERS.credit.includes(sym)) grouped.credit[sym] = entry;
-    });
+    const grouped: Record<string, Record<string, unknown>> = { indices: {}, sectors: {}, credit: {} };
+
+    const fetchProfile = async (sym: string) => {
+      try {
+        const url = `https://financialmodelingprep.com/stable/profile?symbol=${encodeURIComponent(sym)}&apikey=${FMP_API_KEY}`;
+        const data = await fetchJSON(url) as Array<{
+          symbol: string; companyName: string; price: number; change: number;
+          changePercentage: number; range: string; volume: number; marketCap: number;
+          averageVolume: number;
+        }>;
+        if (!data || data.length === 0) return null;
+        const q = data[0];
+        const rangeParts = (q.range ?? "").split("-");
+        const yearLow = parseFloat(rangeParts[0] ?? "0");
+        const yearHigh = parseFloat(rangeParts[rangeParts.length - 1] ?? "0");
+        return {
+          symbol: q.symbol, name: q.companyName, price: q.price,
+          change: q.change, changePct: q.changePercentage,
+          yearHigh, yearLow, volume: q.volume, marketCap: q.marketCap,
+          pe: null, previousClose: q.price - q.change,
+          priceAvg50: null, priceAvg200: null,
+        };
+      } catch {
+        return null;
+      }
+    };
+
+    const BATCH = 5;
+    for (let i = 0; i < all.length; i += BATCH) {
+      const batch = all.slice(i, i + BATCH);
+      const results = await Promise.all(batch.map((sym) => fetchProfile(sym).then((entry) => ({ sym, entry }))));
+      results.forEach(({ sym, entry }) => {
+        if (!entry) return;
+        if (FMP_TICKERS.indices.includes(sym)) grouped.indices[sym] = entry;
+        else if (FMP_TICKERS.sectors.includes(sym)) grouped.sectors[sym] = entry;
+        else if (FMP_TICKERS.credit.includes(sym)) grouped.credit[sym] = entry;
+      });
+      if (i + BATCH < all.length) await new Promise((r) => setTimeout(r, 300));
+    }
+
     setCache(cacheKey, grouped);
     res.json(grouped);
   } catch (err) {
